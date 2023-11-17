@@ -23,7 +23,7 @@ image_size = config_yaml.get("image_size", "512x512")
 n_chat_modes_per_page = config_yaml.get("n_chat_modes_per_page", 5)
 # mongodb_uri = f"mongodb://mongo:{config_env['MONGODB_PORT']}"
 
-mongodb_uri = config_env.get("MONGODB_PATH")
+mongodb_uri = "mongodb+srv://doadmin:X7K2k8w4195L0VQa@mongodb-2264b8a3.mongo.ondigitalocean.com/admin?tls=true&authSource=admin&replicaSet=mongodb?connectTimeoutMS=30000&socketTimeoutMS=30000"
 
 
 # chat_modes
