@@ -9,7 +9,7 @@ import config
 
 class Database:
     def __init__(self):
-        self.client = pymongo.MongoClient("mongodb+srv://doadmin:X7K2k8w4195L0VQa@mongodb-2264b8a3.mongo.ondigitalocean.com/admin?authSource=admin&replicaSet=mongodb&tls=true")
+        self.client = pymongo.MongoClient(config.mongodb_uri)
         self.db = self.client["chatgpt_telegram_bot"]
 
         self.user_collection = self.db["user"]

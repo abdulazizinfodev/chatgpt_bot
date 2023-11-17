@@ -6,13 +6,13 @@ services:
     image: mongo:latest
     restart: always
     ports:
-      - "27017:27017"
-      # - 127.0.0.1:${MONGODB_PORT:-27017}:${MONGODB_PORT:-27017}
-    volumes:
-      - /path/on/host:/data/db
+      # - "27017:27017"
+      - 127.0.0.1:${MONGODB_PORT:-27017}:${MONGODB_PORT:-27017}
     # volumes:
-    #   - ${MONGODB_PATH:-./mongodb}:/data/db
-    # TODO: add auth
+    #   - /path/on/host:/data/db
+    volumes:
+      - ${MONGODB_PATH:-./mongodb}:/data/db
+    TODO: add auth
 
   chatgpt_telegram_bot:
     container_name: chatgpt_telegram_bot
