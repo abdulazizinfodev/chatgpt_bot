@@ -115,8 +115,8 @@ async def is_bot_mentioned(update: Update, context: CallbackContext):
 
 
 async def start_handle(update: Update, context: CallbackContext):
-    reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\nIltimos kuting..."
-    await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
+    text = "Salom! Men <b>ChatGPT</b> botman 🤖\nIltimos kuting..."
+    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     await register_user_if_not_exists(update, context, update.message.from_user)
     user_id = update.message.from_user.id
 
