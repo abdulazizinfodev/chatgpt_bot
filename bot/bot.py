@@ -5,6 +5,7 @@ import traceback
 import html
 import json
 from datetime import datetime
+import pyttsx3
 import openai
 from gtts import gTTS
 from pydub import AudioSegment
@@ -41,6 +42,10 @@ logger = logging.getLogger(__name__)
 
 user_semaphores = {}
 user_tasks = {}
+
+engine = pyttsx3.init()
+engine.setProperty('rate', 150)  # Tezlik (tezligi o'zgartirib ko'ring)
+engine.setProperty('volume', 1.0)  # Hovucha (0.0 - 1.0 oralig'ida)
 
 HELP_MESSAGE = """Commands:
 ⚪ /mode – Suhbat rejimini tanlang
@@ -292,16 +297,23 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
                 prev_answer = answer
 
-            text = prev_answer
-            speed = 1.5
-            pitch = 0.8
-            language = 'en-us'
-            tts = gTTS(text=text, lang=language, slow=False)
-            audio_file_path = "output.mp3"
-            tts.save(audio_file_path)
-            with open(audio_file_path, 'rb') as audio:
+            engine.save_to_file(prev_answer, 'answer.mp3')
+            engine.runAndWait()
+
+            # Ovozli faylni yuborish
+            with open('answer.mp3', 'rb') as audio:
                 await context.bot.send_audio(update.message.chat_id, audio)
-            os.remove(audio_file_path)
+
+            # text = prev_answer
+            # speed = 1.5
+            # pitch = 0.8
+            # language = 'en-us'
+            # tts = gTTS(text=text, lang=language, slow=False)
+            # audio_file_path = "output.mp3"
+            # tts.save(audio_file_path)
+            # with open(audio_file_path, 'rb') as audio:
+            #     await context.bot.send_audio(update.message.chat_id, audio)
+            # os.remove(audio_file_path)
 
             # update user data
             new_dialog_message = {"user": _message,
