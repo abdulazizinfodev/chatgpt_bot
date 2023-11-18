@@ -284,15 +284,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                     text = answer
                     language = 'en'
                     tts = gTTS(text=text, lang=language, slow=False)
-                    mp3_file_path = "output.mp3"
-                    tts.save(mp3_file_path)
-                    ogg_file_path = "output.ogg"
-                    sound = AudioSegment.from_mp3(mp3_file_path)
-                    sound.export(ogg_file_path, format="ogg")
-                    with open(ogg_file_path, 'rb') as audio:
+                    audio_file_path = "output.mp3"
+                    tts.save(audio_file_path)
+                    with open(audio_file_path, 'rb') as audio:
                         await context.bot.send_audio(update.message.chat_id, audio)
-                    os.remove(mp3_file_path)
-                    os.remove(ogg_file_path)
+                    os.remove(audio_file_path)
+                    os.remove(audio_file_path)
                 except telegram.error.BadRequest as e:
                     if str(e).startswith("Message is not modified"):
                         continue
@@ -301,15 +298,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                         text = answer
                         language = 'en'
                         tts = gTTS(text=text, lang=language, slow=False)
-                        mp3_file_path = "output.mp3"
-                        tts.save(mp3_file_path)
-                        ogg_file_path = "output.ogg"
-                        sound = AudioSegment.from_mp3(mp3_file_path)
-                        sound.export(ogg_file_path, format="ogg")
-                        with open(ogg_file_path, 'rb') as audio:
+                        audio_file_path = "output.mp3"
+                        tts.save(audio_file_path)
+                        with open(audio_file_path, 'rb') as audio:
                             await context.bot.send_audio(update.message.chat_id, audio)
-                    os.remove(mp3_file_path)
-                    os.remove(ogg_file_path)
+                    os.remove(audio_file_path)
+                    os.remove(audio_file_path)
 
                 await asyncio.sleep(0.01)  # wait a bit to avoid flooding
 
