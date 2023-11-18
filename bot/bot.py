@@ -298,9 +298,6 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 prev_answer = answer
 
             engine.save_to_file(prev_answer, 'answer.mp3')
-            engine.runAndWait()
-
-            # Ovozli faylni yuborish
             with open('answer.mp3', 'rb') as audio:
                 await context.bot.send_audio(update.message.chat_id, audio)
 
