@@ -45,6 +45,7 @@ user_tasks = {}
 HELP_MESSAGE = """Commands:
 ⚪ /mode – Suhbat rejimini tanlang
 ⚪ /help – Yordam ko'rsatish
+⚪ /cancel – Oldingi xabarni bekor qilish
 
 🎤 🎤 🎤  \nMatn oʻrniga <b>Ovozli xabarlar</b> yuborishingiz mumkin
 
@@ -295,7 +296,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             text = prev_answer
             language = 'en-us'
             tts = gTTS(text=text, lang=language, slow=False)
-            audio_file_path = "output.mp3"
+            audio_file_path = "answer.mp3"
             tts.save(audio_file_path)
             with open(audio_file_path, 'rb') as audio:
                 await context.bot.send_audio(update.message.chat_id, audio)
@@ -603,6 +604,7 @@ async def post_init(application: Application):
         BotCommand("/start", "Boshlash"),
         BotCommand("/mode", "Suhbat rejimini tanlang"),
         BotCommand("/channels", "Kannallar"),
+        BotCommand("/cancel", "Oldingi xabarni bekor qilish"),
         BotCommand("/help", "Yordam xabarini ko'rsatish"),
         BotCommand("/developer", "Bot dasturchisi"),
     ])
