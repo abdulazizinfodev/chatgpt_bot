@@ -6,6 +6,9 @@ import html
 import json
 from datetime import datetime
 import openai
+from gtts import gTTS
+from pydub import AudioSegment
+import os
 
 import telegram
 from telegram import (
@@ -278,11 +281,35 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
                 try:
                     await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id, parse_mode=parse_mode)
+                    text = answer
+                    language = 'en'
+                    tts = await gTTS(text=text, lang=language, slow=False)
+                    mp3_file_path = "output.mp3"
+                    tts.save(mp3_file_path)
+                    ogg_file_path = "output.ogg"
+                    sound = AudioSegment.from_mp3(mp3_file_path)
+                    sound.export(ogg_file_path, format="ogg")
+                    with open(ogg_file_path, 'rb') as audio:
+                        await context.bot.send_audio(update.message.chat_id, audio)
+                    await os.remove(mp3_file_path)
+                    await os.remove(ogg_file_path)
                 except telegram.error.BadRequest as e:
                     if str(e).startswith("Message is not modified"):
                         continue
                     else:
                         await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id)
+                        text = answer
+                        language = 'en'
+                        tts = await gTTS(text=text, lang=language, slow=False)
+                        mp3_file_path = "output.mp3"
+                        tts.save(mp3_file_path)
+                        ogg_file_path = "output.ogg"
+                        sound = AudioSegment.from_mp3(mp3_file_path)
+                        sound.export(ogg_file_path, format="ogg")
+                        with open(ogg_file_path, 'rb') as audio:
+                            await context.bot.send_audio(update.message.chat_id, audio)
+                    await os.remove(mp3_file_path)
+                    await os.remove(ogg_file_path)
 
                 await asyncio.sleep(0.01)  # wait a bit to avoid flooding
 
@@ -341,8 +368,7 @@ async def is_previous_message_not_answered_yet(update: Update, context: Callback
 
     user_id = update.message.from_user.id
     if user_semaphores[user_id].locked():
-        text = "⏳ Iltimos, oldingi xabarga javobni <b>kuting</b>\n"
-        text += "Yoki uni bekor qilishingiz mumkin - /cancel"
+        text = "<b>⏳ Iltimos! Suhbat Rejimini Tanlang - /mode</b>"
         await update.message.reply_text(text, reply_to_message_id=update.message.id, parse_mode=ParseMode.HTML)
         return True
     else:
@@ -560,7 +586,7 @@ def get_settings_menu(user_id: int):
     score_dict = config.models["info"][current_model]["scores"]
     for score_key, score_value in score_dict.items():
         text += "🟢" * score_value + "⚪️" *\
-             (5 - score_value) + f" – {score_key}\n\n"
+            (5 - score_value) + f" – {score_key}\n\n"
 
     text += "\n<b>model</b>ni tanlang:"
 
