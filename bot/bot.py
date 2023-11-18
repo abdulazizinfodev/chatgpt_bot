@@ -295,7 +295,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             text = prev_answer
             speed = 1.5
             pitch = 0.8
-            language = 'en'
+            language = 'en-us'
             tts = gTTS(text=text, lang=language, slow=False)
             audio_file_path = "output.mp3"
             tts.save(audio_file_path)
