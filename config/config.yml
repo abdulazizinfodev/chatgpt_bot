@@ -1,0 +1,15 @@
+# conf
+telegram_token: "6941025094:AAHS1YzZFlF9unON9dAbuYcaBvAtNHaDu3Q"
+openai_api_key: "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"
+openai_api_base: null 
+allowed_telegram_usernames: []
+new_dialog_timeout: 600
+return_n_generated_images: 1
+n_chat_modes_per_page: 5
+image_size: "512x512"
+enable_message_streaming: true
+
+
+chatgpt_price_per_1000_tokens: 0.002
+gpt_price_per_1000_tokens: 0.02
+whisper_price_per_1_min: 0.006
