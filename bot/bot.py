@@ -298,7 +298,14 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             audio_file_path = "output.mp3"
             tts.save(audio_file_path)
             with open(audio_file_path, 'rb') as audio:
-                await context.bot.send_audio(update.message.chat_id, audio)
+                pitch_factor = 1.5
+                speed_factor = 1.0
+                sound = AudioSegment.from_file(audio)
+                changed_sound = sound.speedup(playback_speed=speed_factor)
+                changed_sound = changed_sound.set_frame_rate(
+                    int(changed_sound.frame_rate * pitch_factor))
+                changed_sound.export("changed_voice.ogg", format="ogg")
+                await context.bot.send_audio(update.message.chat_id, changed_sound)
             os.remove(audio_file_path)
             os.remove(audio_file_path)
 
