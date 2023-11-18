@@ -281,33 +281,26 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
                 try:
                     await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id, parse_mode=parse_mode)
-                    text = answer
-                    language = 'en'
-                    tts = gTTS(text=text, lang=language, slow=False)
-                    audio_file_path = "output.mp3"
-                    tts.save(audio_file_path)
-                    with open(audio_file_path, 'rb') as audio:
-                        await context.bot.send_audio(update.message.chat_id, audio)
-                    os.remove(audio_file_path)
-                    os.remove(audio_file_path)
+
                 except telegram.error.BadRequest as e:
                     if str(e).startswith("Message is not modified"):
                         continue
                     else:
                         await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id)
-                        text = answer
-                        language = 'en'
-                        tts = gTTS(text=text, lang=language, slow=False)
-                        audio_file_path = "output.mp3"
-                        tts.save(audio_file_path)
-                        with open(audio_file_path, 'rb') as audio:
-                            await context.bot.send_audio(update.message.chat_id, audio)
-                    os.remove(audio_file_path)
-                    os.remove(audio_file_path)
 
                 await asyncio.sleep(0.01)  # wait a bit to avoid flooding
 
                 prev_answer = answer
+
+            text = prev_answer
+            language = 'en'
+            tts = gTTS(text=text, lang=language, slow=False)
+            audio_file_path = "output.mp3"
+            tts.save(audio_file_path)
+            with open(audio_file_path, 'rb') as audio:
+                await context.bot.send_audio(update.message.chat_id, audio)
+            os.remove(audio_file_path)
+            os.remove(audio_file_path)
 
             # update user data
             new_dialog_message = {"user": _message,
@@ -331,7 +324,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         except Exception as e:
             error_text = f"Something went wrong during completion. Reason: {e}"
             logger.error(error_text)
-            await update.message.reply_text('<b>⏳ Iltimos! Suhbat Rejimini Tanlang - /mode</b>')
+            await update.message.reply_text('<b>⏳ Iltimos! Suhbat Rejimini Tanlang - /mode</b>', parse_mode=ParseMode.HTML)
             return
 
         # send message if some messages were removed from the context
