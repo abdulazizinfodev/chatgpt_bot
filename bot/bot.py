@@ -115,14 +115,13 @@ async def is_bot_mentioned(update: Update, context: CallbackContext):
 
 
 async def start_handle(update: Update, context: CallbackContext):
-    text = "Salom! Men <b>ChatGPT</b> botman 🤖\nIltimos kuting..."
-    await update.message.reply_text(text, parse_mode=ParseMode.HTML)
     await register_user_if_not_exists(update, context, update.message.from_user)
     user_id = update.message.from_user.id
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
     db.start_new_dialog(user_id)
 
+    reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\n"
     reply_text += HELP_MESSAGE
 
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
@@ -561,7 +560,7 @@ def get_settings_menu(user_id: int):
     score_dict = config.models["info"][current_model]["scores"]
     for score_key, score_value in score_dict.items():
         text += "🟢" * score_value + "⚪️" *\
-            (5 - score_value) + f" – {score_key}\n\n"
+             (5 - score_value) + f" – {score_key}\n\n"
 
     text += "\n<b>model</b>ni tanlang:"
 
