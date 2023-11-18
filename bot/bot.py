@@ -40,8 +40,6 @@ user_semaphores = {}
 user_tasks = {}
 
 HELP_MESSAGE = """Commands:
-Salom! Men <b>ChatGPT</b> botman 🤖
-
 ⚪ /mode – Suhbat rejimini tanlang
 ⚪ /help – Yordam ko'rsatish
 
@@ -117,7 +115,7 @@ async def is_bot_mentioned(update: Update, context: CallbackContext):
 
 
 async def start_handle(update: Update, context: CallbackContext):
-    reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\n"
+    reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\nIltimos kuting..."
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
     await register_user_if_not_exists(update, context, update.message.from_user)
     user_id = update.message.from_user.id
@@ -127,7 +125,7 @@ async def start_handle(update: Update, context: CallbackContext):
 
     reply_text += HELP_MESSAGE
 
-    await context.bot.edit_message_text(reply_text, chat_id=reply_text.chat_id, message_id=reply_text.message_id, parse_mode=ParseMode.HTML)
+    await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
     await show_chat_modes_handle(update, context)
     await show_channel_handle(update, context)
 
