@@ -40,6 +40,8 @@ user_semaphores = {}
 user_tasks = {}
 
 HELP_MESSAGE = """Commands:
+Salom! Men <b>ChatGPT</b> botman 🤖
+
 ⚪ /mode – Suhbat rejimini tanlang
 ⚪ /help – Yordam ko'rsatish
 
@@ -61,7 +63,7 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
             update.message.chat_id,
             username=user.username,
             first_name=user.first_name,
-            last_name= user.last_name
+            last_name=user.last_name
         )
         db.start_new_dialog(user.id)
 
@@ -72,7 +74,8 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
         user_semaphores[user.id] = asyncio.Semaphore(1)
 
     if db.get_user_attribute(user.id, "current_model") is None:
-        db.set_user_attribute(user.id, "current_model", config.models["available_text_models"][0])
+        db.set_user_attribute(user.id, "current_model",
+                              config.models["available_text_models"][0])
 
     # back compatibility for n_used_tokens field
     n_used_tokens = db.get_user_attribute(user.id, "n_used_tokens")
@@ -95,35 +98,36 @@ async def register_user_if_not_exists(update: Update, context: CallbackContext, 
 
 
 async def is_bot_mentioned(update: Update, context: CallbackContext):
-     try:
-         message = update.message
+    try:
+        message = update.message
 
-         if message.chat.type == "private":
-             return True
+        if message.chat.type == "private":
+            return True
 
-         if message.text is not None and ("@" + context.bot.username) in message.text:
-             return True
+        if message.text is not None and ("@" + context.bot.username) in message.text:
+            return True
 
-         if message.reply_to_message is not None:
-             if message.reply_to_message.from_user.id == context.bot.id:
-                 return True
-     except:
-         return True
-     else:
-         return False
+        if message.reply_to_message is not None:
+            if message.reply_to_message.from_user.id == context.bot.id:
+                return True
+    except:
+        return True
+    else:
+        return False
 
 
 async def start_handle(update: Update, context: CallbackContext):
+    reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\n"
+    await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
     await register_user_if_not_exists(update, context, update.message.from_user)
     user_id = update.message.from_user.id
 
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
     db.start_new_dialog(user_id)
 
-    reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\n"
     reply_text += HELP_MESSAGE
 
-    await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
+    await context.bot.edit_message_text(reply_text, chat_id=reply_text.chat_id, message_id=reply_text.message_id, parse_mode=ParseMode.HTML)
     await show_chat_modes_handle(update, context)
     await show_channel_handle(update, context)
 
@@ -159,6 +163,7 @@ async def all_users_info(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
     a1 = await update.message.reply_text('Calculating...', parse_mode=ParseMode.HTML)
+
     async def print_user_info(user_info):
         formatted_users_info = []
         for index, user in enumerate(user_info, start=1):
@@ -166,10 +171,11 @@ async def all_users_info(update: Update, context: CallbackContext):
             username = user.get('username', '')
             user_id = user.get('user_id', '')
 
-            formatted_users_info.append(f"```{index}. {full_name}, username: {username}, id: {user_id}```")
+            formatted_users_info.append(
+                f"```{index}. {full_name}, username: {username}, id: {user_id}```")
 
         return "\n\n".join(formatted_users_info)
-    
+
     users_info = await print_user_info(db.get_all_users_info())
     await context.bot.delete_message(chat_id=update.message.chat_id, message_id=a1.message_id)
     await update.message.reply_text(f"Barcha foydalanuvchilar:\n\n{users_info}", parse_mode=ParseMode.MARKDOWN)
@@ -177,7 +183,8 @@ async def all_users_info(update: Update, context: CallbackContext):
 
 async def retry_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
-    if await is_previous_message_not_answered_yet(update, context): return
+    if await is_previous_message_not_answered_yet(update, context):
+        return
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -210,7 +217,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         _message = _message.replace("@" + context.bot.username, "").strip()
 
     await register_user_if_not_exists(update, context, update.message.from_user)
-    if await is_previous_message_not_answered_yet(update, context): return
+    if await is_previous_message_not_answered_yet(update, context):
+        return
 
     user_id = update.message.from_user.id
     chat_mode = db.get_user_attribute(user_id, "current_chat_mode")
@@ -235,8 +243,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             await update.message.chat.send_action(action="typing")
 
             if _message is None or len(_message) == 0:
-                 await update.message.reply_text("🥲 Siz <b>bo'sh xabar</b> yubordingiz. Iltimos, yana bir bor urinib ko'ring!", parse_mode=ParseMode.HTML)
-                 return
+                await update.message.reply_text("🥲 Siz <b>bo'sh xabar</b> yubordingiz. Iltimos, yana bir bor urinib ko'ring!", parse_mode=ParseMode.HTML)
+                return
 
             dialog_messages = db.get_dialog_messages(user_id, dialog_id=None)
             parse_mode = {
@@ -246,7 +254,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
             chatgpt_instance = openai_utils.ChatGPT(model=current_model)
             if config.enable_message_streaming:
-                gen = chatgpt_instance.send_message_stream(_message, dialog_messages=dialog_messages, chat_mode=chat_mode)
+                gen = chatgpt_instance.send_message_stream(
+                    _message, dialog_messages=dialog_messages, chat_mode=chat_mode)
             else:
                 answer, (n_input_tokens, n_output_tokens), n_first_dialog_messages_removed = await chatgpt_instance.send_message(
                     _message,
@@ -261,7 +270,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
 
             prev_answer = ""
             async for gen_item in gen:
-                status, answer, (n_input_tokens, n_output_tokens), n_first_dialog_messages_removed = gen_item
+                status, answer, (n_input_tokens,
+                                 n_output_tokens), n_first_dialog_messages_removed = gen_item
 
                 answer = answer[:4096]  # telegram message limit
 
@@ -282,18 +292,22 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                 prev_answer = answer
 
             # update user data
-            new_dialog_message = {"user": _message, "bot": answer, "date": datetime.now()}
+            new_dialog_message = {"user": _message,
+                                  "bot": answer, "date": datetime.now()}
             db.set_dialog_messages(
                 user_id,
-                db.get_dialog_messages(user_id, dialog_id=None) + [new_dialog_message],
+                db.get_dialog_messages(
+                    user_id, dialog_id=None) + [new_dialog_message],
                 dialog_id=None
             )
 
-            db.update_n_used_tokens(user_id, current_model, n_input_tokens, n_output_tokens)
+            db.update_n_used_tokens(
+                user_id, current_model, n_input_tokens, n_output_tokens)
 
         except asyncio.CancelledError:
             # note: intermediate token updates only work when enable_message_streaming=True (config.yml)
-            db.update_n_used_tokens(user_id, current_model, n_input_tokens, n_output_tokens)
+            db.update_n_used_tokens(
+                user_id, current_model, n_input_tokens, n_output_tokens)
             raise
 
         except Exception as e:
@@ -344,7 +358,8 @@ async def voice_message_handle(update: Update, context: CallbackContext):
         return
 
     await register_user_if_not_exists(update, context, update.message.from_user)
-    if await is_previous_message_not_answered_yet(update, context): return
+    if await is_previous_message_not_answered_yet(update, context):
+        return
 
     a1 = await update.message.reply_text('Uploading. Please wait a moment or more!', parse_mode=ParseMode.HTML)
 
@@ -353,7 +368,7 @@ async def voice_message_handle(update: Update, context: CallbackContext):
 
     voice = update.message.voice
     voice_file = await context.bot.get_file(voice.file_id)
-    
+
     # store file in memory, not on disk
     buf = io.BytesIO()
     await voice_file.download_to_memory(buf)
@@ -365,7 +380,8 @@ async def voice_message_handle(update: Update, context: CallbackContext):
     a2 = await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
     # update n_transcribed_seconds
-    db.set_user_attribute(user_id, "n_transcribed_seconds", voice.duration + db.get_user_attribute(user_id, "n_transcribed_seconds"))
+    db.set_user_attribute(user_id, "n_transcribed_seconds", voice.duration +
+                          db.get_user_attribute(user_id, "n_transcribed_seconds"))
 
     await context.bot.delete_message(chat_id=update.message.chat_id, message_id=a1.message_id)
     await context.bot.delete_message(chat_id=update.message.chat_id, message_id=a2.message_id)
@@ -391,36 +407,42 @@ def get_chat_mode_menu(page_index: int):
 
     # buttons
     chat_mode_keys = list(config.chat_modes.keys())
-    page_chat_mode_keys = chat_mode_keys[page_index * n_chat_modes_per_page:(page_index + 1) * n_chat_modes_per_page]
+    page_chat_mode_keys = chat_mode_keys[page_index *
+                                         n_chat_modes_per_page:(page_index + 1) * n_chat_modes_per_page]
 
     keyboard = []
     for chat_mode_key in page_chat_mode_keys:
         name = config.chat_modes[chat_mode_key]["name"]
-        keyboard.append([InlineKeyboardButton(name, callback_data=f"set_chat_mode|{chat_mode_key}")])
+        keyboard.append([InlineKeyboardButton(
+            name, callback_data=f"set_chat_mode|{chat_mode_key}")])
 
     # pagination
     if len(chat_mode_keys) > n_chat_modes_per_page:
         is_first_page = (page_index == 0)
-        is_last_page = ((page_index + 1) * n_chat_modes_per_page >= len(chat_mode_keys))
+        is_last_page = ((page_index + 1) *
+                        n_chat_modes_per_page >= len(chat_mode_keys))
 
         if is_first_page:
             keyboard.append([
-                InlineKeyboardButton("»", callback_data=f"show_chat_modes|{page_index + 1}")
+                InlineKeyboardButton(
+                    "»", callback_data=f"show_chat_modes|{page_index + 1}")
             ])
         elif is_last_page:
             keyboard.append([
-                InlineKeyboardButton("«", callback_data=f"show_chat_modes|{page_index - 1}"),
+                InlineKeyboardButton(
+                    "«", callback_data=f"show_chat_modes|{page_index - 1}"),
             ])
         else:
             keyboard.append([
-                InlineKeyboardButton("«", callback_data=f"show_chat_modes|{page_index - 1}"),
-                InlineKeyboardButton("»", callback_data=f"show_chat_modes|{page_index + 1}")
+                InlineKeyboardButton(
+                    "«", callback_data=f"show_chat_modes|{page_index - 1}"),
+                InlineKeyboardButton(
+                    "»", callback_data=f"show_chat_modes|{page_index + 1}")
             ])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     return text, reply_markup
-
 
 
 def get_channels_handle(page_index: int):
@@ -429,7 +451,8 @@ def get_channels_handle(page_index: int):
 
     # buttons
     chat_mode_keys = list(config.channels.keys())
-    page_chat_mode_keys = chat_mode_keys[page_index * n_chat_modes_per_page:(page_index + 1) * n_chat_modes_per_page]
+    page_chat_mode_keys = chat_mode_keys[page_index *
+                                         n_chat_modes_per_page:(page_index + 1) * n_chat_modes_per_page]
 
     keyboard = []
     for chat_mode_key in page_chat_mode_keys:
@@ -440,20 +463,25 @@ def get_channels_handle(page_index: int):
     # pagination
     if len(chat_mode_keys) > n_chat_modes_per_page:
         is_first_page = (page_index == 0)
-        is_last_page = ((page_index + 1) * n_chat_modes_per_page >= len(chat_mode_keys))
+        is_last_page = ((page_index + 1) *
+                        n_chat_modes_per_page >= len(chat_mode_keys))
 
         if is_first_page:
             keyboard.append([
-                InlineKeyboardButton("»", callback_data=f"show_chat_modes|{page_index + 1}")
+                InlineKeyboardButton(
+                    "»", callback_data=f"show_chat_modes|{page_index + 1}")
             ])
         elif is_last_page:
             keyboard.append([
-                InlineKeyboardButton("«", callback_data=f"show_chat_modes|{page_index - 1}"),
+                InlineKeyboardButton(
+                    "«", callback_data=f"show_chat_modes|{page_index - 1}"),
             ])
         else:
             keyboard.append([
-                InlineKeyboardButton("«", callback_data=f"show_chat_modes|{page_index - 1}"),
-                InlineKeyboardButton("»", callback_data=f"show_chat_modes|{page_index + 1}")
+                InlineKeyboardButton(
+                    "«", callback_data=f"show_chat_modes|{page_index - 1}"),
+                InlineKeyboardButton(
+                    "»", callback_data=f"show_chat_modes|{page_index + 1}")
             ])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -461,10 +489,10 @@ def get_channels_handle(page_index: int):
     return text, reply_markup
 
 
-
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
-    if await is_previous_message_not_answered_yet(update, context): return
+    if await is_previous_message_not_answered_yet(update, context):
+        return
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -475,7 +503,8 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
 
 async def show_channel_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
-    if await is_previous_message_not_answered_yet(update, context): return
+    if await is_previous_message_not_answered_yet(update, context):
+        return
 
     user_id = update.message.from_user.id
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
@@ -485,25 +514,26 @@ async def show_channel_handle(update: Update, context: CallbackContext):
 
 
 async def show_chat_modes_callback_handle(update: Update, context: CallbackContext):
-     await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
-     if await is_previous_message_not_answered_yet(update.callback_query, context): return
+    await register_user_if_not_exists(update.callback_query, context, update.callback_query.from_user)
+    if await is_previous_message_not_answered_yet(update.callback_query, context):
+        return
 
-     user_id = update.callback_query.from_user.id
-     db.set_user_attribute(user_id, "last_interaction", datetime.now())
+    user_id = update.callback_query.from_user.id
+    db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
-     query = update.callback_query
-     await query.answer()
+    query = update.callback_query
+    await query.answer()
 
-     page_index = int(query.data.split("|")[1])
-     if page_index < 0:
-         return
+    page_index = int(query.data.split("|")[1])
+    if page_index < 0:
+        return
 
-     text, reply_markup = get_chat_mode_menu(page_index)
-     try:
-         await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
-     except telegram.error.BadRequest as e:
-         if str(e).startswith("Xabar o'zgartirilmagan"):
-             pass
+    text, reply_markup = get_chat_mode_menu(page_index)
+    try:
+        await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
+    except telegram.error.BadRequest as e:
+        if str(e).startswith("Xabar o'zgartirilmagan"):
+            pass
 
 
 async def set_chat_mode_handle(update: Update, context: CallbackContext):
@@ -532,7 +562,8 @@ def get_settings_menu(user_id: int):
     text += "\n\n"
     score_dict = config.models["info"][current_model]["scores"]
     for score_key, score_value in score_dict.items():
-        text += "🟢" * score_value + "⚪️" * (5 - score_value) + f" – {score_key}\n\n"
+        text += "🟢" * score_value + "⚪️" *\
+            (5 - score_value) + f" – {score_key}\n\n"
 
     text += "\n<b>model</b>ni tanlang:"
 
@@ -544,7 +575,8 @@ def get_settings_menu(user_id: int):
             title = "✅ " + title
 
         buttons.append(
-            InlineKeyboardButton(title, callback_data=f"set_settings|{model_key}")
+            InlineKeyboardButton(
+                title, callback_data=f"set_settings|{model_key}")
         )
     reply_markup = InlineKeyboardMarkup([buttons])
 
@@ -556,6 +588,7 @@ async def edited_message_handle(update: Update, context: CallbackContext):
         text = "🥲 Afsuski, xabarni <b>tahrirlash</b> qo'llab-quvvatlanmaydi"
         await update.edited_message.reply_text(text, parse_mode=ParseMode.HTML)
 
+
 async def post_init(application: Application):
     await application.bot.set_my_commands([
         BotCommand("/start", "Boshlash"),
@@ -564,6 +597,7 @@ async def post_init(application: Application):
         BotCommand("/help", "Yordam xabarini ko'rsatish"),
         BotCommand("/developer", "Bot dasturchisi"),
     ])
+
 
 def run_bot() -> None:
     application = (
@@ -580,31 +614,46 @@ def run_bot() -> None:
     # add handlers
     user_filter = filters.ALL
     if len(config.allowed_telegram_usernames) > 0:
-        usernames = [x for x in config.allowed_telegram_usernames if isinstance(x, str)]
-        any_ids = [x for x in config.allowed_telegram_usernames if isinstance(x, int)]
+        usernames = [
+            x for x in config.allowed_telegram_usernames if isinstance(x, str)]
+        any_ids = [
+            x for x in config.allowed_telegram_usernames if isinstance(x, int)]
         user_ids = [x for x in any_ids if x > 0]
         group_ids = [x for x in any_ids if x < 0]
-        user_filter = filters.User(username=usernames) | filters.User(user_id=user_ids) | filters.Chat(chat_id=group_ids)
+        user_filter = filters.User(username=usernames) | filters.User(
+            user_id=user_ids) | filters.Chat(chat_id=group_ids)
 
-    application.add_handler(CommandHandler("start", start_handle, filters=user_filter))
-    application.add_handler(CommandHandler("help", help_handle, filters=user_filter))
+    application.add_handler(CommandHandler(
+        "start", start_handle, filters=user_filter))
+    application.add_handler(CommandHandler(
+        "help", help_handle, filters=user_filter))
 
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
-    application.add_handler(CommandHandler("cancel", cancel_handle, filters=user_filter))
+    application.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND & user_filter, message_handle))
+    application.add_handler(CommandHandler(
+        "cancel", cancel_handle, filters=user_filter))
 
-    application.add_handler(MessageHandler(filters.VOICE & user_filter, voice_message_handle))
+    application.add_handler(MessageHandler(
+        filters.VOICE & user_filter, voice_message_handle))
 
-    application.add_handler(CommandHandler("mode", show_chat_modes_handle, filters=user_filter))
-    application.add_handler(CommandHandler("channels", show_channel_handle, filters=user_filter))
+    application.add_handler(CommandHandler(
+        "mode", show_chat_modes_handle, filters=user_filter))
+    application.add_handler(CommandHandler(
+        "channels", show_channel_handle, filters=user_filter))
 
-    application.add_handler(CommandHandler("users_list", all_users_list, filters=user_filter))
-    
-    application.add_handler(CommandHandler("all_users_info", all_users_info, filters=user_filter))
+    application.add_handler(CommandHandler(
+        "users_list", all_users_list, filters=user_filter))
 
-    application.add_handler(CommandHandler("developer", dev_handle, filters=user_filter))
+    application.add_handler(CommandHandler(
+        "all_users_info", all_users_info, filters=user_filter))
 
-    application.add_handler(CallbackQueryHandler(show_chat_modes_callback_handle, pattern="^show_chat_modes"))
-    application.add_handler(CallbackQueryHandler(set_chat_mode_handle, pattern="^set_chat_mode"))
+    application.add_handler(CommandHandler(
+        "developer", dev_handle, filters=user_filter))
+
+    application.add_handler(CallbackQueryHandler(
+        show_chat_modes_callback_handle, pattern="^show_chat_modes"))
+    application.add_handler(CallbackQueryHandler(
+        set_chat_mode_handle, pattern="^set_chat_mode"))
 
     # start the bot
     application.run_polling()
