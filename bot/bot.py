@@ -299,16 +299,9 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
             tts = gTTS(text=text, lang=language, slow=False)
             audio_file_path = "output.mp3"
             tts.save(audio_file_path)
-            sound = AudioSegment.from_mp3(audio_file_path)
-            changed_speed_sound = sound.speedup(playback_speed=speed)
-            changed_pitch_sound = changed_speed_sound.set_frame_rate(
-                int(changed_speed_sound.frame_rate * pitch))
             with open(audio_file_path, 'rb') as audio:
                 await context.bot.send_audio(update.message.chat_id, audio)
-            with open(changed_pitch_sound, 'rb') as audio:
-                await context.bot.send_audio(update.message.chat_id, audio)
             os.remove(audio_file_path)
-            os.remove(changed_pitch_sound)
 
             # update user data
             new_dialog_message = {"user": _message,
