@@ -283,7 +283,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                     await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id, parse_mode=parse_mode)
                     text = answer
                     language = 'en'
-                    tts = await gTTS(text=text, lang=language, slow=False)
+                    tts = gTTS(text=text, lang=language, slow=False)
                     mp3_file_path = "output.mp3"
                     tts.save(mp3_file_path)
                     ogg_file_path = "output.ogg"
@@ -291,8 +291,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                     sound.export(ogg_file_path, format="ogg")
                     with open(ogg_file_path, 'rb') as audio:
                         await context.bot.send_audio(update.message.chat_id, audio)
-                    await os.remove(mp3_file_path)
-                    await os.remove(ogg_file_path)
+                    os.remove(mp3_file_path)
+                    os.remove(ogg_file_path)
                 except telegram.error.BadRequest as e:
                     if str(e).startswith("Message is not modified"):
                         continue
@@ -300,7 +300,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                         await context.bot.edit_message_text(answer, chat_id=placeholder_message.chat_id, message_id=placeholder_message.message_id)
                         text = answer
                         language = 'en'
-                        tts = await gTTS(text=text, lang=language, slow=False)
+                        tts = gTTS(text=text, lang=language, slow=False)
                         mp3_file_path = "output.mp3"
                         tts.save(mp3_file_path)
                         ogg_file_path = "output.ogg"
@@ -308,8 +308,8 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
                         sound.export(ogg_file_path, format="ogg")
                         with open(ogg_file_path, 'rb') as audio:
                             await context.bot.send_audio(update.message.chat_id, audio)
-                    await os.remove(mp3_file_path)
-                    await os.remove(ogg_file_path)
+                    os.remove(mp3_file_path)
+                    os.remove(ogg_file_path)
 
                 await asyncio.sleep(0.01)  # wait a bit to avoid flooding
 
@@ -337,7 +337,7 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         except Exception as e:
             error_text = f"Something went wrong during completion. Reason: {e}"
             logger.error(error_text)
-            await update.message.reply_text('Iltimos buni bosing - /cancel')
+            await update.message.reply_text('<b>⏳ Iltimos! Suhbat Rejimini Tanlang - /mode</b>')
             return
 
         # send message if some messages were removed from the context
