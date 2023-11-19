@@ -9,7 +9,8 @@ import openai
 from gtts import gTTS
 from pydub import AudioSegment
 import os
-
+from telegram import ReplyKeyboardMarkup, KeyboardButton
+from telegram.ext import CallbackQueryHandler
 import telegram
 from telegram import (
     Update,
@@ -26,7 +27,7 @@ from telegram.ext import (
     MessageHandler,
     CallbackQueryHandler,
     AIORateLimiter,
-    filters
+    filters,
 )
 from telegram.constants import ParseMode, ChatAction
 
@@ -128,9 +129,20 @@ async def start_handle(update: Update, context: CallbackContext):
     reply_text = "Salom! Men <b>ChatGPT</b> botman 🤖\n"
     reply_text += HELP_MESSAGE
 
+    user_id = update.message.from_user.id
+    admin_id = 1883655962
+
+    if user_id == admin_id:
+        keyboard = [
+            [KeyboardButton("/all_users_info"), KeyboardButton
+                ("/users_list")],
+        ]
+
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        await update.message.reply_text("Hi Admin", reply_markup=reply_markup)
+
     await update.message.reply_text(reply_text, parse_mode=ParseMode.HTML)
     await show_chat_modes_handle(update, context)
-    await show_channel_handle(update, context)
 
 
 async def help_handle(update: Update, context: CallbackContext):
@@ -386,7 +398,7 @@ async def voice_message_handle(update: Update, context: CallbackContext):
     buf.seek(0)  # move cursor to the beginning of the buffer
 
     transcribed_text = await openai_utils.transcribe_audio(buf)
-    text = f"🎤 The result: "
+    text = f"Iltimos javob to'liq yozib bulishini kuting:\nJavob tugadi deb yoziladi."
     a2 = await update.message.reply_text(text, parse_mode=ParseMode.HTML)
 
     # update n_transcribed_seconds
@@ -394,8 +406,9 @@ async def voice_message_handle(update: Update, context: CallbackContext):
                           db.get_user_attribute(user_id, "n_transcribed_seconds"))
 
     await context.bot.delete_message(chat_id=update.message.chat_id, message_id=a1.message_id)
-    await context.bot.delete_message(chat_id=update.message.chat_id, message_id=a2.message_id)
     await message_handle(update, context, message=transcribed_text)
+    await update.message.reply_text("Javob tugadi!", parse_mode=ParseMode.HTML)
+    await context.bot.delete_message(chat_id=update.message.chat_id, message_id=a2.message_id)
 
 
 async def cancel_handle(update: Update, context: CallbackContext):
@@ -455,50 +468,6 @@ def get_chat_mode_menu(page_index: int):
     return text, reply_markup
 
 
-def get_channels_handle(page_index: int):
-    n_chat_modes_per_page = config.n_chat_modes_per_page
-    text = f"🔰🔰<b>Kannallarga obuna buling!</b>🔰🔰"
-
-    # buttons
-    chat_mode_keys = list(config.channels.keys())
-    page_chat_mode_keys = chat_mode_keys[page_index *
-                                         n_chat_modes_per_page:(page_index + 1) * n_chat_modes_per_page]
-
-    keyboard = []
-    for chat_mode_key in page_chat_mode_keys:
-        name = config.channels[chat_mode_key]["name"]
-        link = config.channels[chat_mode_key]["link"]
-        keyboard.append([InlineKeyboardButton(name, url=link)])
-
-    # pagination
-    if len(chat_mode_keys) > n_chat_modes_per_page:
-        is_first_page = (page_index == 0)
-        is_last_page = ((page_index + 1) *
-                        n_chat_modes_per_page >= len(chat_mode_keys))
-
-        if is_first_page:
-            keyboard.append([
-                InlineKeyboardButton(
-                    "»", callback_data=f"show_chat_modes|{page_index + 1}")
-            ])
-        elif is_last_page:
-            keyboard.append([
-                InlineKeyboardButton(
-                    "«", callback_data=f"show_chat_modes|{page_index - 1}"),
-            ])
-        else:
-            keyboard.append([
-                InlineKeyboardButton(
-                    "«", callback_data=f"show_chat_modes|{page_index - 1}"),
-                InlineKeyboardButton(
-                    "»", callback_data=f"show_chat_modes|{page_index + 1}")
-            ])
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    return text, reply_markup
-
-
 async def show_chat_modes_handle(update: Update, context: CallbackContext):
     await register_user_if_not_exists(update, context, update.message.from_user)
     if await is_previous_message_not_answered_yet(update, context):
@@ -508,18 +477,6 @@ async def show_chat_modes_handle(update: Update, context: CallbackContext):
     db.set_user_attribute(user_id, "last_interaction", datetime.now())
 
     text, reply_markup = get_chat_mode_menu(0)
-    await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
-
-
-async def show_channel_handle(update: Update, context: CallbackContext):
-    await register_user_if_not_exists(update, context, update.message.from_user)
-    if await is_previous_message_not_answered_yet(update, context):
-        return
-
-    user_id = update.message.from_user.id
-    db.set_user_attribute(user_id, "last_interaction", datetime.now())
-
-    text, reply_markup = get_channels_handle(0)
     await update.message.reply_text(text, reply_markup=reply_markup, parse_mode=ParseMode.HTML)
 
 
@@ -603,7 +560,6 @@ async def post_init(application: Application):
     await application.bot.set_my_commands([
         BotCommand("/start", "Boshlash"),
         BotCommand("/mode", "Suhbat rejimini tanlang"),
-        BotCommand("/channels", "Kannallar"),
         BotCommand("/cancel", "Oldingi xabarni bekor qilish"),
         BotCommand("/help", "Yordam xabarini ko'rsatish"),
         BotCommand("/developer", "Bot dasturchisi"),
@@ -649,8 +605,6 @@ def run_bot() -> None:
 
     application.add_handler(CommandHandler(
         "mode", show_chat_modes_handle, filters=user_filter))
-    application.add_handler(CommandHandler(
-        "channels", show_channel_handle, filters=user_filter))
 
     application.add_handler(CommandHandler(
         "users_list", all_users_list, filters=user_filter))
@@ -663,6 +617,7 @@ def run_bot() -> None:
 
     application.add_handler(CallbackQueryHandler(
         show_chat_modes_callback_handle, pattern="^show_chat_modes"))
+
     application.add_handler(CallbackQueryHandler(
         set_chat_mode_handle, pattern="^set_chat_mode"))
 
